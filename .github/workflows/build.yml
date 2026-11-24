@@ -2,7 +2,11 @@ name: Build APK
 
 on:
   push:
+    branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -18,7 +22,17 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk SleepCycleAlarm.apk
       - uses: actions/upload-artifact@v4
         with:
           name: SleepCycleAlarm-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: SleepCycleAlarm.apk
+      # 폰에서 바로 받을 수 있게 'latest' 릴리스에 APK를 올린다
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: 최신 빌드
+          body: "커밋 ${{ github.sha }} 에서 빌드됨. SleepCycleAlarm.apk를 받아 설치하세요."
+          prerelease: false
+          make_latest: true
+          files: SleepCycleAlarm.apk
